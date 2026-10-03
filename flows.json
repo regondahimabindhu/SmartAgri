@@ -1,0 +1,222 @@
+[
+    {
+        "id": "tab_agri_agent_main",
+        "type": "tab",
+        "label": "Agentic AI Smart Agriculture Framework",
+        "disabled": false,
+        "info": "Node-RED flow implementing an Agentic AI Perception-Reasoning-Action loop for precision smart agriculture."
+    },
+    {
+        "id": "node_timer_inject",
+        "type": "inject",
+        "z": "tab_agri_agent_main",
+        "name": "5s Telemetry Ticker",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "node_sensor_ingest"
+            ]
+        ]
+    },
+    {
+        "id": "node_sensor_ingest",
+        "type": "function",
+        "z": "tab_agri_agent_main",
+        "name": "1. Ingest IoT Telemetry",
+        "func": "// Sensor Ingestion Node\n// Reads soil moisture, ambient temp, humidity, NPK, and weather API forecast\nconst simulator = global.get('simulator');\nif (simulator) {\n    msg.payload = simulator.getTelemetry();\n} else {\n    msg.payload = {\n        soilMoisture: 32,\n        soilTemp: 24.5,\n        ambientTemp: 28.0,\n        humidity: 68,\n        npk: { nitrogen: 45, phosphorus: 30, potassium: 50 },\n        weatherForecast: { rainProbability: 15, expectedRainfallMm: 0, hoursToRain: 12 },\n        timestamp: new Date().toISOString()\n    };\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 120,
+        "wires": [
+            [
+                "node_perception_agent"
+            ]
+        ]
+    },
+    {
+        "id": "node_perception_agent",
+        "type": "function",
+        "z": "tab_agri_agent_main",
+        "name": "2. Perception Agent",
+        "func": "// Perception Agent Node\n// Analyzes raw telemetry into structured environmental risk signals\nconst t = msg.payload;\n\nmsg.perception = {\n    moistureDeficit: t.soilMoisture < 35,\n    severeDrought: t.soilMoisture < 25,\n    highHeat: t.ambientTemp > 34,\n    rainIncoming: t.weatherForecast.rainProbability >= 70 && t.weatherForecast.hoursToRain <= 3,\n    pestThreat: t.humidity > 80 && t.ambientTemp > 24,\n    npkDeficit: t.npk.nitrogen < 30 || t.npk.phosphorus < 20 || t.npk.potassium < 35\n};\n\nmsg.telemetry = t;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 120,
+        "wires": [
+            [
+                "node_reasoning_agent"
+            ]
+        ]
+    },
+    {
+        "id": "node_reasoning_agent",
+        "type": "function",
+        "z": "tab_agri_agent_main",
+        "name": "3. Reasoning & Tool Calling Agent",
+        "func": "// Agentic AI Planner & Reasoning Engine\n// Evaluates perceptions, invokes tools, resolves goal conflicts, forms multi-step action plan\nconst engine = global.get('agenticEngine');\nconst simulator = global.get('simulator');\n\nlet decision;\nif (engine && msg.telemetry) {\n    decision = engine.processCycle(msg.telemetry);\n} else {\n    decision = {\n        primaryAction: 'IDLE',\n        reasoningSteps: ['Default idle state'],\n        actionPlan: ['Passive telemetry monitor']\n    };\n}\n\n// Perform actuation on simulator if present\nif (simulator && decision.primaryAction !== 'IDLE') {\n    simulator.applyActuation(decision.primaryAction);\n}\n\nmsg.payload = decision;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 240,
+        "wires": [
+            [
+                "node_actuation_router",
+                "node_agent_memory_logger"
+            ]
+        ]
+    },
+    {
+        "id": "node_actuation_router",
+        "type": "switch",
+        "z": "tab_agri_agent_main",
+        "name": "4. Actuation Router",
+        "property": "payload.primaryAction",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "START_IRRIGATION",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "START_FERTIGATION",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "DELAY_IRRIGATION_RAIN",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 670,
+        "y": 240,
+        "wires": [
+            [
+                "node_pump_actuator"
+            ],
+            [
+                "node_fertigation_actuator"
+            ],
+            [
+                "node_rain_delay_logger"
+            ],
+            [
+                "node_idle_logger"
+            ]
+        ]
+    },
+    {
+        "id": "node_pump_actuator",
+        "type": "function",
+        "z": "tab_agri_agent_main",
+        "name": "Actuator: Irrigation Pump ON",
+        "func": "node.warn(`[AGENT ACTUATION] Triggering Irrigation Solenoid Valve Zone A & Drip Pump ON.`);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "node_fertigation_actuator",
+        "type": "function",
+        "z": "tab_agri_agent_main",
+        "name": "Actuator: Fertigation Injector ON",
+        "func": "node.warn(`[AGENT ACTUATION] Triggering NPK Fertigation Dosing Injector ON.`);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "node_rain_delay_logger",
+        "type": "function",
+        "z": "tab_agri_agent_main",
+        "name": "Actuator: Conservation Delay",
+        "func": "node.warn(`[AGENT CONSERVATION] Irrigation deferred due to 92% rain forecast. Saved ~250 Liters.`);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "node_idle_logger",
+        "type": "debug",
+        "z": "tab_agri_agent_main",
+        "name": "Debug Output (Idle)",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "node_agent_memory_logger",
+        "type": "function",
+        "z": "tab_agri_agent_main",
+        "name": "5. Agent Memory Ledger",
+        "func": "// Log decision to memory context for long-term reflection\nconst history = global.get('agentMemory') || [];\nhistory.unshift(msg.payload);\nif (history.length > 50) history.pop();\nglobal.set('agentMemory', history);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    }
+]

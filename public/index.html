@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic AI Framework for Precision Smart Agriculture</title>
+  <meta name="description" content="Node-RED Multi-Agent Autonomous Perception, Reasoning & Actuation Engine for Smart Precision Agriculture">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">🌱</div>
+      <div class="brand-title">
+        <h1>Agentic AI Framework for Smart Agriculture</h1>
+        <p>Node-RED Multi-Agent Autonomous Perception, Reasoning & Actuation Engine</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-indicator">
+        <div class="pulse-dot"></div>
+        <span>OODA Loop Active</span>
+      </div>
+      <button class="btn btn-primary" onclick="triggerAgentCycle()" id="btn-trigger-cycle">⚡ Run Agent Cycle</button>
+      <a href="/red" target="_blank" class="btn btn-nodered" id="btn-nodered-link">🔴 Node-RED Editor</a>
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <main class="container">
+
+    <!-- Left Column: Main Dashboard & Agent Logs -->
+    <div class="main-content">
+      
+      <!-- Interactive Scenario & Crop Selector Bar -->
+      <div class="card">
+        <div class="card-title">
+          <span>🧪 Field Environment Scenarios & Crop Selection</span>
+          <span style="font-size: 12px; font-weight: 400; color: var(--text-muted);">Simulate extreme stress & test agent adaptation</span>
+        </div>
+        
+        <div class="control-row">
+          <div class="control-group">
+            <label class="control-label">Select Crop Target Profile:</label>
+            <div class="scenario-buttons">
+              <button class="btn-crop active" onclick="selectCrop('Tomato (Flowering Stage)')">🍅 Tomato (Flowering)</button>
+              <button class="btn-crop" onclick="selectCrop('Paddy Rice (Submerged)')">🌾 Paddy Rice</button>
+              <button class="btn-crop" onclick="selectCrop('Wheat (Tillering Stage)')">🍞 Wheat</button>
+              <button class="btn-crop" onclick="selectCrop('Lettuce (Vegetative)')">🥬 Lettuce</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <label class="control-label">Inject Environmental Stress Scenario:</label>
+          <div class="scenario-buttons">
+            <button class="btn-scenario btn-normal" onclick="injectScenario('normal')">🔄 Normal Baseline</button>
+            <button class="btn-scenario btn-drought" onclick="injectScenario('drought')">🌵 Severe Drought (Heatwave)</button>
+            <button class="btn-scenario btn-rain" onclick="injectScenario('rain_approaching')">🌧️ Low Moisture + Incoming Rainstorm</button>
+            <button class="btn-scenario btn-pest" onclick="injectScenario('pest_outbreak')">🐛 High Humidity Fungal Spore Threat</button>
+            <button class="btn-scenario btn-npk" onclick="injectScenario('npk_deficiency')">🧪 NPK Nutrient Depletion</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Sensor Telemetry Grid -->
+      <div class="card">
+        <div class="card-title">
+          <span>📡 IoT Field Telemetry & Weather API</span>
+          <span id="last-update-time" style="font-size: 12px; color: var(--text-muted);">Updated just now</span>
+        </div>
+        
+        <div class="grid-4">
+          <div class="metric-box">
+            <div class="metric-label">Soil Moisture</div>
+            <div class="metric-value"><span id="val-soil-moisture">45.0</span><span class="metric-unit">%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill fill-green" id="bar-soil-moisture" style="width: 45%;"></div></div>
+            <div class="status-pill pill-green" id="pill-soil-moisture">Optimal</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-label">Ambient Temp</div>
+            <div class="metric-value"><span id="val-ambient-temp">28.0</span><span class="metric-unit">°C</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill fill-blue" id="bar-ambient-temp" style="width: 56%;"></div></div>
+            <div class="status-pill pill-blue" id="pill-ambient-temp">Normal</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-label">Relative Humidity</div>
+            <div class="metric-value"><span id="val-humidity">68.0</span><span class="metric-unit">%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill fill-purple" id="bar-humidity" style="width: 68%;"></div></div>
+            <div class="status-pill pill-green" id="pill-humidity">Balanced</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-label">Rain Forecast (3h)</div>
+            <div class="metric-value"><span id="val-rain-prob">15</span><span class="metric-unit">%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill fill-amber" id="bar-rain-prob" style="width: 15%;"></div></div>
+            <div class="status-pill pill-green" id="pill-rain">Clear Sky</div>
+          </div>
+        </div>
+
+        <div class="grid-4" style="margin-top: 16px;">
+          <div class="metric-box">
+            <div class="metric-label">Soil NPK (N-P-K)</div>
+            <div class="metric-value" style="font-size: 18px;"><span id="val-npk">45 / 30 / 50</span></div>
+            <div class="npk-bars-container">
+              <div class="npk-bar-item"><span class="npk-label">N</span><div class="progress-bar-bg"><div class="progress-bar-fill fill-green" id="bar-npk-n" style="width: 45%;"></div></div></div>
+              <div class="npk-bar-item"><span class="npk-label">P</span><div class="progress-bar-bg"><div class="progress-bar-fill fill-blue" id="bar-npk-p" style="width: 30%;"></div></div></div>
+              <div class="npk-bar-item"><span class="npk-label">K</span><div class="progress-bar-bg"><div class="progress-bar-fill fill-purple" id="bar-npk-k" style="width: 50%;"></div></div></div>
+            </div>
+            <div class="status-pill pill-green" id="pill-npk" style="margin-top: 6px;">Nutrient Rich</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-label">Biosecurity & Pest Index</div>
+            <div class="metric-value" style="font-size: 16px;"><span id="val-pest">LOW</span></div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px;">Pathogen Monitor Active</div>
+            <div class="status-pill pill-green" id="pill-pest-status">Safe</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-label">Water Reservoir</div>
+            <div class="metric-value"><span id="val-reservoir">85</span><span class="metric-unit">%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill fill-blue" id="bar-reservoir" style="width: 85%;"></div></div>
+            <div class="status-pill pill-blue">Cap: 5,000 Liters</div>
+          </div>
+          
+          <div class="metric-box">
+            <div class="metric-label">Active Crop Target</div>
+            <div class="metric-value" style="font-size: 15px;"><span id="val-crop">Tomato (Flowering)</span></div>
+            <div style="font-size: 11px; color: var(--accent-green); margin-top: 10px;">Target Baseline: <span id="val-crop-target">50% H2O</span></div>
+            <div class="status-pill pill-purple">Dynamic Profile</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agentic AI Reasoning & Thought Trace Log -->
+      <div class="card">
+        <div class="card-title">
+          <span>🧠 Node-RED Multi-Agent Perception-Reasoning-Action Log</span>
+          <div>
+            <button class="btn-small" onclick="clearAgentMemory()">🗑️ Clear Logs</button>
+            <span style="font-size: 12px; color: var(--accent-green); margin-left: 8px;">Live OODA Stream</span>
+          </div>
+        </div>
+        <div class="reasoning-container" id="reasoning-logs">
+          <div class="log-entry">
+            <span class="log-time">[00:00:00]</span>
+            <span class="log-action">AGENT INITIALIZED</span>
+            <div class="log-step">Connecting to Node-RED telemetry pipeline...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Actuators, Manual Override & Architecture -->
+    <div class="sidebar">
+      
+      <!-- Actuator Hardware Relays & Manual Override -->
+      <div class="card">
+        <div class="card-title">
+          <span>⚙️ Hardware Actuator Relays</span>
+        </div>
+        <div class="actuator-status">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Drip Irrigation Pump</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Main Field Water Line</div>
+          </div>
+          <span class="status-pill pill-green" id="status-pump">OFF (Idle)</span>
+        </div>
+        
+        <div class="actuator-status">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Solenoid Valve Zone A</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Precision Drip Line</div>
+          </div>
+          <span class="status-pill pill-green" id="status-valve">CLOSED</span>
+        </div>
+        
+        <div class="actuator-status">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Fertigation Injector Pump</div>
+            <div style="font-size: 11px; color: var(--text-muted);">NPK Liquid Dosing</div>
+          </div>
+          <span class="status-pill pill-green" id="status-fertigation">OFF (Idle)</span>
+        </div>
+
+        <div style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">🛠️ Manual Actuator Override Controls:</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button class="btn-manual" onclick="manualActuator('START_IRRIGATION')">▶️ Pump ON</button>
+            <button class="btn-manual" onclick="manualActuator('STOP_IRRIGATION')">⏹️ Pump OFF</button>
+            <button class="btn-manual" onclick="manualActuator('START_FERTIGATION')">🧪 Dose NPK</button>
+            <button class="btn-manual" onclick="manualActuator('STOP_FERTIGATION')">⏹️ Fert OFF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sustainability & Impact Ledger -->
+      <div class="card">
+        <div class="card-title">
+          <span>💧 Sustainability & Efficiency Metrics</span>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 12px; color: var(--text-muted);">Water Conserved via Rain Intelligence</div>
+          <div style="font-size: 26px; font-weight: 700; color: var(--accent-green);"><span id="val-water-saved">1,420</span> Liters</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--text-muted);">Total Automated Cycles Executed</div>
+          <div style="font-size: 20px; font-weight: 700; color: #fff;"><span id="val-total-cycles">34</span> Cycles</div>
+        </div>
+      </div>
+
+      <!-- Node-RED Flow Info -->
+      <div class="card">
+        <div class="card-title">
+          <span>🔴 Node-RED Multi-Agent Flow</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+          The framework executes 5 decoupled agentic nodes in Node-RED runtime:
+        </p>
+        <ul class="nodered-list">
+          <li><b>1. Ingest IoT Telemetry</b> (5s Ticker)</li>
+          <li><b>2. Perception Agent Node</b> (Perception)</li>
+          <li><b>3. Reasoning & Tool Agent</b> (Planner)</li>
+          <li><b>4. Actuation Switch Router</b> (Executor)</li>
+          <li><b>5. Agent Memory Ledger</b> (Reflection)</li>
+        </ul>
+        <a href="/red" target="_blank" class="btn btn-nodered" style="width: 100%; margin-top: 16px; justify-content: center;">
+          Launch Node-RED Editor (/red)
+        </a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
